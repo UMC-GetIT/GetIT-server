@@ -2,10 +2,8 @@ package com.example.getIt.product.service;
 
 
 import com.example.getIt.product.DTO.ProductDTO;
-import com.example.getIt.product.DTO.WebsiteDTO;
 import com.example.getIt.product.entity.ProductEntity;
 import com.example.getIt.product.entity.ReviewEntity;
-import com.example.getIt.product.entity.WebsiteEntity;
 import com.example.getIt.product.repository.ProductRepository;
 import com.example.getIt.product.repository.ReviewRepository;
 import com.example.getIt.product.repository.WebsiteRepository;
@@ -14,16 +12,21 @@ import com.example.getIt.user.repository.UserRepository;
 import com.example.getIt.util.BaseException;
 import com.example.getIt.util.BaseResponseStatus;
 
-import com.example.getIt.util.Role;
 import org.json.JSONArray;
 
 import org.json.JSONObject;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import javax.annotation.PostConstruct;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
@@ -58,36 +61,15 @@ public class ProductService {
         return getProducts;
     }
 
-    public ProductDTO.GetProductRes getProduct(Long productIdx) throws BaseException {
-        try{
-            ProductEntity productEntity = productRepository.findAllByProductIdx(productIdx);
-            List<WebsiteEntity> websiteEntity = websiteRepository.findAllByProduct(productEntity);
-            List<WebsiteDTO.GetWebsiteRes> websites = new ArrayList<>();
-
-            for(WebsiteEntity temp : websiteEntity){
-                websites.add(new WebsiteDTO.GetWebsiteRes(
-                        temp.getWebIdx(),
-                        temp.getCost(),
-                        temp.getUrl()
-                ));
-            }
-
-            return new ProductDTO.GetProductRes(
-                    productEntity.getProductIdx(),
-                    productEntity.getType(),
-                    productEntity.getImage(),
-                    productEntity.getName(),
-                    productEntity.getBrand(),
-                    productEntity.getDate(),
-                    productEntity.getCpu(),
-                    productEntity.getRam(),
-                    productEntity.getLowestprice(),
-                    productEntity.getDescription(),
-                    websites
-            );
-        }catch (Exception e){
-            throw new BaseException(BaseResponseStatus.DATABASE_ERROR);
+    public void getProduct(String productIdx) throws BaseException, IOException {
+        String url = "https://search.shopping.naver.com/catalog/"+productIdx;
+        Document doc = Jsoup.connect(url).get();
+        Elements contents = doc.select("div.top_info_inner__1cEYE > span");
+        for (int j = 0; j < contents.size(); j++) {
+            final String info = contents.get(j).text();
+            System.out.println(info);
         }
+
     }
 
     public List<ProductDTO.GetProductList> getCategoryList(ProductDTO.GetCategoryRes getCategoryRes) throws BaseException {

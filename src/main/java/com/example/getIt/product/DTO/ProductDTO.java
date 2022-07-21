@@ -47,6 +47,7 @@ public class ProductDTO {
     @Getter
     @Setter
     @AllArgsConstructor
+    @Builder
     public static class GetProductRes {
         private Long productIdx;
         private String type;
@@ -58,6 +59,8 @@ public class ProductDTO {
         private String ram;
         private String price;
         private String description;
+        private String productId;
+        private String productUrl;
         private List<WebsiteDTO.GetWebsiteRes> websites;
     }
 
